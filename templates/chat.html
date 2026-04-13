@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}AI Health Guide - AyurVeda{% endblock %}
+{% block content %}
+<div class="page-container chat-page">
+  <div class="page-header">
+    <h1>AI Ayurvedic Guide 💬</h1>
+    <p class="page-sub">Ask anything about Ayurveda, herbs, diet, and natural wellness</p>
+  </div>
+  <div class="chat-container card">
+    <div class="chat-messages" id="chatMessages">
+      <div class="chat-msg assistant"><div class="chat-bubble">Namaste! 🙏 I am your Ayurvedic health guide. I can help you with questions about Ayurvedic principles, doshas, herbal remedies, diet recommendations, and natural wellness practices. How can I help you today?</div></div>
+    </div>
+    <div class="chat-input-area">
+      <input type="text" id="chatInput" placeholder="Ask about Ayurveda, herbs, diet, doshas..." onkeypress="if(event.key==='Enter')sendMessage()"/>
+      <button onclick="sendMessage()" class="btn btn-primary" id="sendBtn">Send</button>
+    </div>
+  </div>
+  <div class="chat-suggestions">
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0.75rem">Try asking:</p>
+    <div class="suggestions-grid">
+      <button onclick="askSuggestion(this)" class="suggestion-btn">"What are remedies for acidity?"</button>
+      <button onclick="askSuggestion(this)" class="suggestion-btn">"How to improve digestion naturally?"</button>
+      <button onclick="askSuggestion(this)" class="suggestion-btn">"What foods balance Pitta dosha?"</button>
+      <button onclick="askSuggestion(this)" class="suggestion-btn">"Best herbs for stress relief?"</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth(() => {
+  fetch('/api/chat/history').then(r=>r.json()).then(msgs => {
+    msgs.forEach(m => appendMessage(m.role, m.content));
+    scrollChat();
+  });
+});
+function appendMessage(role, content) {
+  const div = document.createElement('div');
+  div.className = `chat-msg ${role}`;
+  div.innerHTML = `<div class="chat-bubble">${content.replace(/\n/g,'<br>')}</div>`;
+  document.getElementById('chatMessages').appendChild(div);
+}
+function scrollChat() { const c = document.getElementById('chatMessages'); c.scrollTop = c.scrollHeight; }
+async function sendMessage() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendMessage('user', msg);
+  scrollChat();
+  const btn = document.getElementById('sendBtn');
+  btn.disabled = true; btn.textContent = '...';
+  appendMessage('assistant', '<em>Thinking...</em>');
+  scrollChat();
+  const res = await fetch('/api/chat/message', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({message: msg})});
+  const d = await res.json();
+  const msgs = document.getElementById('chatMessages');
+  msgs.removeChild(msgs.lastChild);
+  appendMessage('assistant', res.ok ? d.assistantMessage : (d.error || 'Sorry, I could not respond. Please try again.'));
+  scrollChat();
+  btn.disabled = false; btn.textContent = 'Send';
+}
+function askSuggestion(btn) { document.getElementById('chatInput').value = btn.textContent.replace(/"/g,''); sendMessage(); }
+</script>
+{% endblock %}

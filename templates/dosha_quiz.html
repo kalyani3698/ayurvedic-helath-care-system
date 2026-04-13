@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}Dosha Quiz - AyurVeda{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:680px">
+  <div class="page-header">
+    <h1>Discover Your Dosha</h1>
+    <p class="page-sub">Answer these questions honestly to find your unique Ayurvedic body constitution</p>
+  </div>
+  <div id="quizSection">
+    <form id="doshaForm">
+      <div class="card" style="margin-bottom:1.5rem">
+        <h3 style="color:var(--primary);margin-bottom:1.5rem">🏃 Physical & Lifestyle</h3>
+        <div class="form-group"><label>How many hours do you typically sleep?</label>
+          <select id="sleepHours"><option value="5">Less than 6 hours</option><option value="7" selected>6–8 hours</option><option value="9">More than 8 hours</option></select></div>
+        <div class="form-group"><label>How would you describe your exercise frequency?</label>
+          <select id="exerciseFrequency"><option value="rarely">Rarely / Never</option><option value="sometimes" selected>Sometimes (1-3x/week)</option><option value="daily">Daily / Intense</option></select></div>
+        <div class="form-group"><label>What is your work type?</label>
+          <select id="workType"><option value="sedentary">Sedentary (desk work)</option><option value="active">Active (physical work)</option></select></div>
+        <div class="form-group"><label>How is your body frame?</label>
+          <select id="bodyFrame"><option value="slim">Slim / Thin</option><option value="medium">Medium / Athletic</option><option value="large">Large / Heavy</option></select></div>
+        <div class="form-group"><label>What is your skin type?</label>
+          <select id="skinType"><option value="dry">Dry / Rough</option><option value="sensitive">Oily / Sensitive</option><option value="smooth">Smooth / Thick</option></select></div>
+      </div>
+      <div class="card" style="margin-bottom:1.5rem">
+        <h3 style="color:var(--primary);margin-bottom:1.5rem">🧘 Mental & Digestive</h3>
+        <div class="form-group"><label>How would you describe your stress level?</label>
+          <select id="stressLevel"><option value="low">Low — Calm and steady</option><option value="medium" selected>Medium — Occasional stress</option><option value="high">High — Often stressed or anxious</option><option value="very high">Very High — Chronic stress</option></select></div>
+        <div class="form-group"><label>How is your energy level throughout the day?</label>
+          <select id="energyLevel"><option value="low">Low — Often fatigued</option><option value="medium" selected>Medium — Moderate energy</option><option value="high">High — Energetic and driven</option></select></div>
+        <div class="form-group"><label>How would you describe your digestion?</label>
+          <select id="digestiveHealth"><option value="irregular bloating">Irregular / Bloating / Gas</option><option value="acidity heartburn">Acidity / Heartburn</option><option value="slow heavy">Slow / Heavy / Sluggish</option><option value="normal" selected>Normal / Healthy</option></select></div>
+        <div class="form-group"><label>What are your food habits?</label>
+          <select id="foodHabits"><option value="irregular raw">Irregular / Raw / Light foods</option><option value="spicy hot">Spicy / Hot / Sour foods</option><option value="sweet heavy">Sweet / Heavy / Oily foods</option><option value="balanced" selected>Balanced / Mixed</option></select></div>
+        <div class="form-group"><label>How would you describe your temperament?</label>
+          <select id="temperament"><option value="anxious">Anxious / Creative / Enthusiastic</option><option value="driven">Driven / Competitive / Intense</option><option value="calm">Calm / Steady / Patient</option></select></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Analyze My Dosha 🔍</button>
+    </form>
+  </div>
+  <div id="resultSection" style="display:none">
+    <div class="card dosha-result-card" id="resultCard"></div>
+    <button onclick="document.getElementById('quizSection').style.display='block';document.getElementById('resultSection').style.display='none'" class="btn btn-outline btn-full" style="margin-top:1rem">Retake Quiz</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth(() => {});
+document.getElementById('doshaForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Analyzing...'; btn.disabled = true;
+  const fields = ['sleepHours','exerciseFrequency','workType','bodyFrame','skinType','stressLevel','energyLevel','digestiveHealth','foodHabits','temperament'];
+  const body = {};
+  fields.forEach(f => body[f] = document.getElementById(f).value);
+  const res = await fetch('/api/dosha/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const d = await res.json();
+  const colors = {Vata:'#6366f1',Pitta:'#f59e0b',Kapha:'#16a34a'};
+  const emojis = {Vata:'💨',Pitta:'🔥',Kapha:'🌊'};
+  document.getElementById('resultCard').innerHTML = `
+    <div class="result-header" style="background:${colors[d.dominantDosha]}20;border:2px solid ${colors[d.dominantDosha]}40;padding:2rem;border-radius:1rem;margin-bottom:1.5rem;text-align:center">
+      <div style="font-size:4rem">${emojis[d.dominantDosha]}</div>
+      <h2 style="margin:.5rem 0">Your Dominant Dosha</h2>
+      <h1 style="color:${colors[d.dominantDosha]};font-size:2.5rem;margin:0">${d.dominantDosha}</h1>
+    </div>
+    <div class="dosha-bars" style="margin-bottom:1.5rem">
+      <h3>Your Dosha Balance</h3>
+      <div class="dosha-bar-item"><span>Vata</span><div class="bar-track"><div class="bar-fill vata" style="width:${d.vataScore}%"></div></div><span>${d.vataScore}%</span></div>
+      <div class="dosha-bar-item"><span>Pitta</span><div class="bar-track"><div class="bar-fill pitta" style="width:${d.pittaScore}%"></div></div><span>${d.pittaScore}%</span></div>
+      <div class="dosha-bar-item"><span>Kapha</span><div class="bar-track"><div class="bar-fill kapha" style="width:${d.kaphaScore}%"></div></div><span>${d.kaphaScore}%</span></div>
+    </div>
+    <div class="info-block"><h3>🩺 Health Tendencies</h3><p>${d.healthTendencies}</p></div>
+    <div class="info-block"><h3>🥗 Recommended Diet</h3><p>${d.recommendedDiet}</p></div>
+    <div class="info-block"><h3>🧘 Lifestyle Advice</h3><p>${d.lifestyleAdvice}</p></div>
+    <a href="/dashboard" class="btn btn-primary btn-full" style="margin-top:1rem">View Dashboard →</a>`;
+  document.getElementById('quizSection').style.display = 'none';
+  document.getElementById('resultSection').style.display = 'block';
+  btn.textContent = 'Analyze My Dosha 🔍'; btn.disabled = false;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - AyurVeda{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1 id="greeting">Your Digital Ayurvedic Twin</h1>
+    <p class="page-sub">Your personal health overview and wellness insights</p>
+  </div>
+  <div class="dashboard-grid">
+    <div class="card dosha-card" id="doshaCard">
+      <div class="card-label">🧠 Constitution Profile</div>
+      <div id="doshaContent"><div class="loading">Loading your dosha profile...</div></div>
+    </div>
+    <div class="card" id="healthCard">
+      <div class="card-header-row"><h3>Lifestyle Data</h3><span>📊</span></div>
+      <div id="healthContent"><div class="loading">Loading health data...</div></div>
+    </div>
+    <div class="card quick-action" onclick="location.href='/symptom-analyzer'">
+      <div class="action-icon">🌿</div>
+      <div><h3>Symptom Analyzer</h3><p>Describe your symptoms and get personalized Ayurvedic remedies and natural healing guidance.</p></div>
+    </div>
+    <div class="card quick-action" onclick="location.href='/chat'">
+      <div class="action-icon">💬</div>
+      <div><h3>AI Health Guide</h3><p>Chat with your personal Ayurvedic assistant. Ask questions about herbs, routines, or philosophy.</p></div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth(user => {
+  document.getElementById('greeting').textContent = `Namaste, ${user.name.split(' ')[0]} 🙏`;
+  fetch('/api/dosha/result').then(r => r.json()).then(d => {
+    if (d.error) {
+      document.getElementById('doshaContent').innerHTML = `<h2>Discover Your Dosha</h2><p style="color:var(--muted)">Take our comprehensive assessment to understand your unique mind-body constitution and receive personalized recommendations.</p><a href="/dosha-quiz" class="btn btn-primary" style="margin-top:1rem">Start Assessment →</a>`;
+    } else {
+      document.getElementById('doshaContent').innerHTML = `
+        <div class="dosha-result">
+          <div class="dosha-info">
+            <h2>You are predominantly <span class="dosha-name ${d.dominantDosha.toLowerCase()}">${d.dominantDosha}</span></h2>
+            <p style="color:var(--muted);margin:.75rem 0">${(d.healthTendencies||'').substring(0,150)}...</p>
+            <a href="/dosha-quiz" class="btn btn-outline">Retake Quiz →</a>
+          </div>
+          <div class="dosha-bars">
+            <div class="dosha-bar-item"><span>Vata</span><div class="bar-track"><div class="bar-fill vata" style="width:${d.vataScore}%"></div></div><span>${d.vataScore}%</span></div>
+            <div class="dosha-bar-item"><span>Pitta</span><div class="bar-track"><div class="bar-fill pitta" style="width:${d.pittaScore}%"></div></div><span>${d.pittaScore}%</span></div>
+            <div class="dosha-bar-item"><span>Kapha</span><div class="bar-track"><div class="bar-fill kapha" style="width:${d.kaphaScore}%"></div></div><span>${d.kaphaScore}%</span></div>
+          </div>
+        </div>`;
+    }
+  }).catch(() => { document.getElementById('doshaContent').innerHTML = '<p>Could not load dosha data.</p>'; });
+
+  fetch('/api/user/health-data').then(r => r.json()).then(d => {
+    if (d.error) {
+      document.getElementById('healthContent').innerHTML = `<div class="empty-state"><p>No health data recorded yet.</p><a href="/health-data" class="btn btn-primary" style="margin-top:1rem">Input Health Data</a></div>`;
+    } else {
+      document.getElementById('healthContent').innerHTML = `
+        <div class="health-grid">
+          <div class="health-stat"><span class="stat-label">Sleep</span><span class="stat-val">${d.sleepHours||'-'} hrs</span></div>
+          <div class="health-stat"><span class="stat-label">Water</span><span class="stat-val">${d.waterIntake||'-'} L</span></div>
+          <div class="health-stat"><span class="stat-label">Stress</span><span class="stat-val">${d.stressLevel||'-'}</span></div>
+          <div class="health-stat"><span class="stat-label">Digestion</span><span class="stat-val">${d.digestiveHealth||'-'}</span></div>
+          <div class="health-stat"><span class="stat-label">Energy</span><span class="stat-val">${d.energyLevel||'-'}</span></div>
+          <div class="health-stat"><span class="stat-label">Exercise</span><span class="stat-val">${d.exerciseFrequency||'-'}</span></div>
+        </div>
+        <a href="/health-data" class="btn btn-outline btn-full" style="margin-top:1rem">Update Data</a>`;
+    }
+  }).catch(() => { document.getElementById('healthContent').innerHTML = '<p>Could not load health data.</p>'; });
+});
+</script>
+{% endblock %}

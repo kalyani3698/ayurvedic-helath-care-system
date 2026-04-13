@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}AyurVeda - Ancient Wisdom for Modern Wellness{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="container hero-content">
+    <div class="badge-pill">✨ Discover your holistic health profile</div>
+    <h1 class="hero-title">Ancient Wisdom for<br><span class="gradient-text">Modern Wellness</span></h1>
+    <p class="hero-sub">Discover your unique Dosha, analyze symptoms through the lens of Ayurveda, and get personalized natural remedies to balance your mind, body, and spirit.</p>
+    <div class="hero-btns" id="heroBtns">
+      <a href="/register" class="btn btn-primary btn-lg">Start Your Journey</a>
+      <a href="/knowledge" class="btn btn-outline btn-lg">Explore Knowledge Base</a>
+    </div>
+  </div>
+</section>
+
+<section class="features-section">
+  <div class="container">
+    <div class="section-header">
+      <h2>A Complete Ayurvedic Ecosystem</h2>
+      <p>Everything you need to align your lifestyle with your natural constitution.</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card"><div class="feature-icon">🧠</div><h3>Dosha Analysis</h3><p>Take our comprehensive quiz to discover your unique balance of Vata, Pitta, and Kapha energies.</p></div>
+      <div class="feature-card"><div class="feature-icon">🌡️</div><h3>Symptom Analyzer</h3><p>Describe how you're feeling and receive AI-powered insights based on ancient Ayurvedic principles.</p></div>
+      <div class="feature-card"><div class="feature-icon">🌿</div><h3>Personalized Remedies</h3><p>Get tailored diet suggestions, lifestyle adjustments, and herbal recommendations for your body type.</p></div>
+      <div class="feature-card"><div class="feature-icon">💬</div><h3>AI Health Guide</h3><p>Chat with your personal Ayurvedic assistant anytime for guidance on herbs, diet, and lifestyle.</p></div>
+      <div class="feature-card"><div class="feature-icon">📊</div><h3>Digital Twin Dashboard</h3><p>View your complete health profile, dosha balance, and personalized lifestyle recommendations.</p></div>
+      <div class="feature-card"><div class="feature-icon">🛍️</div><h3>Ayurvedic Products</h3><p>Discover curated Ayurvedic product recommendations from trusted stores across India.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-card">
+      <div class="cta-text">
+        <h2>Balance starts from within.</h2>
+        <p>Ayurveda teaches that health is a dynamic state of balance between mind, body, and environment. Start your personalized wellness journey today.</p>
+        <a href="/register" class="btn btn-primary btn-lg" id="ctaBtn">Begin Profiling</a>
+      </div>
+      <div class="cta-image">🧘</div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+checkAuth(user => {
+  if (user) {
+    document.getElementById('heroBtns').innerHTML = '<a href="/dashboard" class="btn btn-primary btn-lg">Go to Dashboard</a>';
+    document.getElementById('ctaBtn').href = '/dashboard';
+    document.getElementById('ctaBtn').textContent = 'Go to Dashboard';
+  }
+});
+</script>
+{% endblock %}

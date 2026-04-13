@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>{% block title %}AyurVeda - Ancient Wisdom for Modern Wellness{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="container nav-inner">
+      <a href="/" class="logo">🌿 AyurVeda</a>
+      <div class="nav-links" id="navLinks">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/knowledge" class="nav-link">Knowledge Base</a>
+        <span id="authNav"></span>
+      </div>
+      <button class="hamburger" onclick="toggleMenu()">☰</button>
+    </div>
+  </nav>
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer class="footer">
+    <div class="container">
+      <p>🌿 AyurVeda — Holistic Health Guidance based on Ancient Ayurvedic Wisdom</p>
+      <p style="font-size:0.8rem;margin-top:0.5rem;opacity:0.6">For educational purposes only. Always consult a qualified healthcare professional.</p>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

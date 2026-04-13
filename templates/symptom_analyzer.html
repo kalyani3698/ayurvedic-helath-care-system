@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Symptom Analyzer - AyurVeda{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:720px">
+  <div class="page-header">
+    <h1>Symptom Analyzer</h1>
+    <p class="page-sub">Describe your symptoms and receive personalized Ayurvedic insights and natural remedies</p>
+  </div>
+  <div class="card" style="margin-bottom:2rem">
+    <form id="symptomForm">
+      <div class="form-group">
+        <label>Describe Your Symptoms *</label>
+        <textarea id="symptoms" placeholder="e.g., headache, fatigue, digestive issues, skin rash, joint pain..." rows="4" required></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Duration (optional)</label>
+          <select id="duration"><option value="">Select...</option><option>1-2 days</option><option>3-7 days</option><option>1-2 weeks</option><option>More than 2 weeks</option><option>Chronic / Recurring</option></select></div>
+        <div class="form-group"><label>Severity (optional)</label>
+          <select id="severity"><option value="">Select...</option><option>Mild</option><option>Moderate</option><option>Severe</option></select></div>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Analyze Symptoms 🌿</button>
+    </form>
+  </div>
+  <div id="resultSection" style="display:none">
+    <div class="card" style="margin-bottom:1rem"><h3>🔍 Possible Causes</h3><p id="rCauses"></p></div>
+    <div class="card" style="margin-bottom:1rem"><h3>🧘 Ayurvedic Explanation</h3><p id="rExplain"></p></div>
+    <div class="card" style="margin-bottom:1rem"><h3>🌿 Natural Remedies</h3><p id="rRemedies"></p></div>
+    <div class="card" style="margin-bottom:1rem"><h3>🥗 Diet Suggestions</h3><p id="rDiet"></p></div>
+    <div class="card" style="margin-bottom:1rem"><h3>💪 Lifestyle Improvements</h3><p id="rLifestyle"></p></div>
+    <div class="card" id="productsCard" style="margin-bottom:1rem;display:none">
+      <h3>🛍️ Related Ayurvedic Products</h3>
+      <div id="rProducts" class="products-grid"></div>
+    </div>
+    <button onclick="document.getElementById('resultSection').style.display='none';document.getElementById('symptomForm').reset()" class="btn btn-outline">Analyze Another Symptom</button>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth(() => {});
+document.getElementById('symptomForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Analyzing with AI...'; btn.disabled = true;
+  const res = await fetch('/api/symptoms/analyze', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({
+    symptoms: document.getElementById('symptoms').value,
+    duration: document.getElementById('duration').value,
+    severity: document.getElementById('severity').value
+  })});
+  const d = await res.json();
+  if (res.ok) {
+    document.getElementById('rCauses').textContent = d.possibleCauses;
+    document.getElementById('rExplain').textContent = d.ayurvedicExplanation;
+    document.getElementById('rRemedies').textContent = d.naturalRemedies;
+    document.getElementById('rDiet').textContent = d.dietSuggestions;
+    document.getElementById('rLifestyle').textContent = d.lifestyleImprovements;
+    if (d.relatedProducts && d.relatedProducts.length) {
+      document.getElementById('rProducts').innerHTML = d.relatedProducts.map(p => `<a href="${p.url}" target="_blank" class="product-card"><div class="product-name">${p.name}</div><div class="product-store">${p.store}</div><div class="product-cat">${p.category}</div><div class="product-desc">${p.description}</div><div class="product-link">View Product →</div></a>`).join('');
+      document.getElementById('productsCard').style.display = 'block';
+    }
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('resultSection').scrollIntoView({behavior:'smooth'});
+  } else { alert(d.error || 'Analysis failed. Please try again.'); }
+  btn.textContent = 'Analyze Symptoms 🌿'; btn.disabled = false;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Login - AyurVeda{% endblock %}
+{% block content %}
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">🌿</div>
+    <h1>Welcome Back</h1>
+    <p class="auth-sub">Sign in to continue your wellness journey</p>
+    <div id="errorMsg" class="error-msg" style="display:none"></div>
+    <form id="loginForm">
+      <div class="form-group">
+        <label>Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com" required/>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="password" placeholder="Your password" required/>
+      </div>
+      <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Sign In</button>
+    </form>
+    <p class="auth-switch">Don't have an account? <a href="/register">Register here</a></p>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+document.getElementById('loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  const err = document.getElementById('errorMsg');
+  btn.textContent = 'Signing in...'; btn.disabled = true; err.style.display = 'none';
+  try {
+    const res = await fetch('/api/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email: document.getElementById('email').value, password: document.getElementById('password').value})});
+    const data = await res.json();
+    if (res.ok) { window.location.href = '/dashboard'; }
+    else { err.textContent = data.error; err.style.display = 'block'; }
+  } catch(e) { err.textContent = 'Connection error. Please try again.'; err.style.display = 'block'; }
+  btn.textContent = 'Sign In'; btn.disabled = false;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Health Data - AyurVeda{% endblock %}
+{% block content %}
+<div class="page-container" style="max-width:700px">
+  <div class="page-header">
+    <h1>Your Health Profile</h1>
+    <p class="page-sub">Fill in your lifestyle and health information for personalized analysis</p>
+  </div>
+  <div id="successMsg" class="success-msg" style="display:none">✅ Health data saved successfully!</div>
+  <form id="healthForm">
+    <div class="card" style="margin-bottom:1.5rem">
+      <h3 style="margin-bottom:1.5rem;color:var(--primary)">🌙 Lifestyle Information</h3>
+      <div class="form-group"><label>Sleep Hours per Night</label><input type="number" id="sleepHours" placeholder="e.g. 7" min="1" max="24" step="0.5"/></div>
+      <div class="form-group"><label>Exercise Frequency</label>
+        <select id="exerciseFrequency"><option value="">Select...</option><option>Never</option><option>Rarely (1-2x/month)</option><option>Sometimes (1-2x/week)</option><option>Regularly (3-4x/week)</option><option>Daily</option></select></div>
+      <div class="form-group"><label>Work Type</label>
+        <select id="workType"><option value="">Select...</option><option value="sedentary">Sedentary (desk job)</option><option value="active">Active (physical work)</option><option value="mixed">Mixed</option></select></div>
+      <div class="form-group"><label>Stress Level</label>
+        <select id="stressLevel"><option value="">Select...</option><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option><option value="very high">Very High</option></select></div>
+    </div>
+    <div class="card" style="margin-bottom:1.5rem">
+      <h3 style="margin-bottom:1.5rem;color:var(--primary)">💊 Health Information</h3>
+      <div class="form-group"><label>Current Symptoms</label><textarea id="currentSymptoms" placeholder="Describe any current symptoms you are experiencing..." rows="3"></textarea></div>
+      <div class="form-group"><label>Existing Diseases / Conditions</label><textarea id="existingDiseases" placeholder="List any existing medical conditions..." rows="2"></textarea></div>
+      <div class="form-group"><label>Digestive Health</label>
+        <select id="digestiveHealth"><option value="">Select...</option><option>Normal / Healthy</option><option>Irregular / Bloating</option><option>Acidity / Heartburn</option><option>Slow / Sluggish</option><option>IBS / Sensitive</option></select></div>
+      <div class="form-group"><label>Food Habits</label>
+        <select id="foodHabits"><option value="">Select...</option><option>Vegetarian</option><option>Vegan</option><option>Non-vegetarian</option><option>Mixed / Flexitarian</option><option>Irregular eating patterns</option></select></div>
+      <div class="form-group"><label>Water Intake (litres/day)</label><input type="number" id="waterIntake" placeholder="e.g. 2" min="0" max="10" step="0.5"/></div>
+      <div class="form-group"><label>Energy Level</label>
+        <select id="energyLevel"><option value="">Select...</option><option value="low">Low (always tired)</option><option value="medium">Medium (moderate energy)</option><option value="high">High (energetic)</option><option value="very high">Very High (very active)</option></select></div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-full" id="submitBtn">Save Health Data</button>
+  </form>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+requireAuth(() => {
+  fetch('/api/user/health-data').then(r => r.json()).then(d => {
+    if (!d.error) {
+      ['sleepHours','exerciseFrequency','workType','stressLevel','currentSymptoms','existingDiseases','digestiveHealth','foodHabits','waterIntake','energyLevel'].forEach(k => {
+        const el = document.getElementById(k);
+        if (el && d[k] != null) el.value = d[k];
+      });
+    }
+  });
+});
+document.getElementById('healthForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = document.getElementById('submitBtn');
+  btn.textContent = 'Saving...'; btn.disabled = true;
+  const body = {};
+  ['sleepHours','exerciseFrequency','workType','stressLevel','currentSymptoms','existingDiseases','digestiveHealth','foodHabits','waterIntake','energyLevel'].forEach(k => { body[k] = document.getElementById(k).value || null; });
+  const res = await fetch('/api/user/health-data', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  if (res.ok) { const s = document.getElementById('successMsg'); s.style.display='block'; setTimeout(()=>s.style.display='none', 3000); }
+  btn.textContent = 'Save Health Data'; btn.disabled = false;
+});
+</script>
+{% endblock %}

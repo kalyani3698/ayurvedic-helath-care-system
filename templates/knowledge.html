@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}Knowledge Base - AyurVeda{% endblock %}
+{% block content %}
+<div class="page-container">
+  <div class="page-header">
+    <h1>Ayurvedic Knowledge Base</h1>
+    <p class="page-sub">Explore the ancient wisdom of Ayurveda — doshas, herbs, and natural remedies</p>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" onclick="showTab('doshas',this)">🌀 The Three Doshas</button>
+    <button class="tab-btn" onclick="showTab('herbs',this)">🌿 Ayurvedic Herbs</button>
+    <button class="tab-btn" onclick="showTab('products',this)">🛍️ Product Store Links</button>
+  </div>
+  <div id="doshasTab" class="tab-content active">
+    <div class="doshas-grid" id="doshasGrid"><div class="loading">Loading...</div></div>
+  </div>
+  <div id="herbsTab" class="tab-content" style="display:none">
+    <div class="herbs-grid" id="herbsGrid"><div class="loading">Loading...</div></div>
+  </div>
+  <div id="productsTab" class="tab-content" style="display:none">
+    <div class="products-grid-large" id="productsGrid"><div class="loading">Loading...</div></div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function showTab(name, btn) {
+  document.querySelectorAll('.tab-content').forEach(t => t.style.display='none');
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(name+'Tab').style.display='block';
+  btn.classList.add('active');
+}
+const doshaColors = {Vata:'#6366f1',Pitta:'#f59e0b',Kapha:'#16a34a'};
+const doshaEmoji = {Vata:'💨',Pitta:'🔥',Kapha:'🌊'};
+fetch('/api/knowledge/doshas').then(r=>r.json()).then(doshas => {
+  document.getElementById('doshasGrid').innerHTML = doshas.map(d => `
+    <div class="dosha-knowledge-card" style="border-top:4px solid ${doshaColors[d.name]}">
+      <div style="font-size:3rem;margin-bottom:1rem">${doshaEmoji[d.name]}</div>
+      <h2 style="color:${doshaColors[d.name]}">${d.name}</h2>
+      <p class="dosha-elements"><strong>Elements:</strong> ${d.elements}</p>
+      <p class="dosha-qualities"><em>${d.qualities}</em></p>
+      <p style="margin:1rem 0;color:var(--muted)">${d.description}</p>
+      <div class="info-block"><strong>⚠️ Health Tendencies</strong><p>${d.healthTendencies}</p></div>
+      <div class="info-block"><strong>✅ Balancing Foods</strong><p>${d.balancingFoods}</p></div>
+      <div class="info-block"><strong>❌ Avoid</strong><p>${d.avoidFoods}</p></div>
+      <div class="info-block"><strong>🧘 Lifestyle Tips</strong><p>${d.lifestyleTips}</p></div>
+    </div>`).join('');
+});
+fetch('/api/knowledge/herbs').then(r=>r.json()).then(herbs => {
+  document.getElementById('herbsGrid').innerHTML = herbs.map(h => `
+    <div class="card herb-card">
+      <h3 style="color:var(--primary)">${h.name}</h3>
+      <p style="font-style:italic;color:var(--muted);font-size:0.9rem">${h.sanskritName}</p>
+      <div class="info-block"><strong>Benefits</strong><p>${h.benefits}</p></div>
+      <div class="info-block"><strong>Uses</strong><p>${h.uses}</p></div>
+      <div class="info-block"><strong>Dosha Effect</strong><p>${h.doshaEffect}</p></div>
+      <div class="info-block" style="background:#fff3cd20"><strong>⚠️ Precautions</strong><p>${h.precautions}</p></div>
+    </div>`).join('');
+});
+fetch('/api/knowledge/products').then(r=>r.json()).then(products => {
+  document.getElementById('productsGrid').innerHTML = products.map(p => `
+    <a href="${p.url}" target="_blank" class="product-card">
+      <div class="product-badge">${p.store}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="product-cat">${p.category}</div>
+      <div class="product-desc">${p.description}</div>
+      <div class="product-link">Shop Now →</div>
+    </a>`).join('');
+});
+</script>
+{% endblock %}
