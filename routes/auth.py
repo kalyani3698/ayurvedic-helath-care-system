@@ -1,5 +1,5 @@
-from flask import Blueprint, request, jsonify, session
-from app import db, bcrypt
+from flask import Blueprint, request, jsonify, session, current_app
+from flask import current_app
 from models import User
 
 auth_bp = Blueprint('auth', __name__)
@@ -16,12 +16,12 @@ def register():
         return jsonify({'error': 'Name, email and password are required'}), 400
     if User.query.filter_by(email=email).first():
         return jsonify({'error': 'Email already registered'}), 400
-    hashed = bcrypt.generate_password_hash(password).decode('utf-8')
+    hashed = current_app.extensions['bcrypt'].generate_password_hash(password).decode('utf-8')
     user = User(name=name, email=email, password=hashed,
                 age=data.get('age') or None, gender=data.get('gender') or None,
                 height=data.get('height') or None, weight=data.get('weight') or None)
-    db.session.add(user)
-    db.session.commit()
+    current_app.extensions['sqlalchemy'].db.session.add(user)
+    current_app.extensions['sqlalchemy'].db.session.commit()
     session.permanent = True
     session['user_id'] = user.id
     return jsonify({'user': user.to_dict(), 'message': 'Registration successful'}), 201
