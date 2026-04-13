@@ -5,7 +5,7 @@ from groq import Groq
 import os, json, re
 
 symptoms_bp = Blueprint('symptoms', __name__)
-groq_client = Groq(api_key=os.getenv('GROQ_API_KEY'))
+groq_client = Groq(api_key=os.getenv('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'))
 
 PRODUCTS = [
     {'name': 'Triphala Churna', 'store': 'Amazon', 'url': 'https://www.amazon.in/s?k=triphala+churna', 'category': 'Digestive Health', 'description': 'Classic Ayurvedic digestive tonic'},
